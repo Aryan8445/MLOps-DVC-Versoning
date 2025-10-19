@@ -1,4 +1,5 @@
 [core]
-    remote = gcsremote
-['remote "gcsremote"']
-    url = gs://mlops-course-sixth-zoo-473912-i0-unique/dvc_store
+    remote = gcs_remote
+['remote "gcs_remote"']
+    url = gs://mlops-course-sixth-zoo-473912-i0-unique/Assignments/Week_2/dvcstore
+    credentialpath = /home/jupyter/.config/gcloud/application_default_credentials.json
