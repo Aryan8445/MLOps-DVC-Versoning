@@ -1,6 +1,6 @@
 joblib
 pandas
-scikit-learn
+scikit-learn==1.7.2
 dvc[gcs]
 pytest>=8.0,<9.0
 cml
