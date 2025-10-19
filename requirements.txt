@@ -1,6 +1,6 @@
-joblib 
-pandas 
-scikit-learn 
+joblib
+pandas
+scikit-learn
 dvc[gcs]
-pytest
+pytest>=8.0,<9.0
 cml
