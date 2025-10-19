@@ -1,0 +1,43 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install dvc cml pytest
+
+      - name: Pull data and model from DVC
+        run: |
+          dvc pull
+
+      - name: Run Sanity Test
+        run: python sanity_check.py
+
+      - name: Run Unit Tests
+        run: pytest -v --junitxml=result.xml > result.log
+
+      - name: Comment Test Report using CML
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "## Test Report" > report.md
+          cat result.log >> report.md
+          npx cml comment create report.md
