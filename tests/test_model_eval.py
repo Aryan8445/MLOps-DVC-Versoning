@@ -3,8 +3,8 @@ import pandas as pd
 from sklearn.metrics import accuracy_score
 
 def test_model_accuracy():
-    model = joblib.load("data/Week_2/model/model.joblib")
-    data = pd.read_csv("data/Week_2/train_data.csv")
+    model = joblib.load("data/Week_2/model.dvc")
+    data = pd.read_csv("data/Week_2/train_data/data.csv")
 
     X = data.drop("target", axis=1)
     y = data["target"]
