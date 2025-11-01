@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: iris-api
-        image: us-central1-docker.pkg.dev/${GCP_PROJECT_ID}/${GAR_REPO}/iris-api:latest
+        image: us-central1-docker.pkg.dev/sixth-zoo-473912-i0/my-repo/iris-api:latest
         ports:
         - containerPort: 8200
