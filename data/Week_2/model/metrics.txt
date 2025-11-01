@@ -1,0 +1,1 @@
+Training accuracy: 0.975
