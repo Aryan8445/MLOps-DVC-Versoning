@@ -156,5 +156,5 @@ async def predict_species(input: IrisInput, request: Request):
             "event": "prediction_error",
             "trace_id": trace_id,
             "error": str(e)
-        }))
+        })) 
         raise HTTPException(status_code=500, detail="Prediction failed")
