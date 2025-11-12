@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 
-# --- OpenTelemetry for tracing ---
+# --- OpenTelemetry for tracing --- 
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
