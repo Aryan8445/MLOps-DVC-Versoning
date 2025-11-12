@@ -12,7 +12,7 @@ spec:
       labels:
         app: iris-api
     spec:
-      serviceAccountName: iris-service-account
+      serviceAccountName: telemetry-access
       containers:
       - name: iris-api
         image: us-central1-docker.pkg.dev/sixth-zoo-473912-i0/my-repo/iris-api:latest
