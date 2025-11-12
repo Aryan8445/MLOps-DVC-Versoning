@@ -3,6 +3,7 @@ import json
 import logging
 import joblib
 import pandas as pd
+import numpy as np
 from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
@@ -16,7 +17,6 @@ from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
 # Initialize tracer
 trace.set_tracer_provider(TracerProvider())
 tracer = trace.get_tracer(__name__)
-
 span_processor = BatchSpanProcessor(CloudTraceSpanExporter())
 trace.get_tracer_provider().add_span_processor(span_processor)
 
@@ -24,7 +24,6 @@ trace.get_tracer_provider().add_span_processor(span_processor)
 logger = logging.getLogger("iris-api-service")
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
-
 formatter = logging.Formatter(
     json.dumps({
         "severity": "%(levelname)s",
@@ -44,29 +43,19 @@ app_state = {
     "is_alive": True
 }
 
-# --- Model Loading (placeholder for Iris model) ---
-def iris_model(features: pd.DataFrame):
-    """Simulated model function — replace with actual ML pipeline."""
-    time.sleep(0.1)  # Simulate computation
-    model = joblib.load("model.joblib")
-    prediction = model.predict(input_df)[0]
-    return prediction
-
-
-# --- Pydantic Model ---
-class IrisInput(BaseModel):
-    sepal_length: float
-    sepal_width: float
-    petal_length: float
-    petal_width: float
+# Global model variable (loaded once)
+model = None
+class_names = ["setosa", "versicolor", "virginica"]  # standard iris labels
 
 
 # --- Startup Event ---
 @app.on_event("startup")
 async def startup_event():
-    time.sleep(2)  # simulate model loading
+    global model
+    time.sleep(2)  # Simulate loading delay
+    model = joblib.load("model.joblib")
     app_state["is_ready"] = True
-    logger.info("Model loaded and API ready.")
+    logger.info("✅ Iris model loaded and API ready.")
 
 
 # --- Liveness Probe ---
@@ -125,6 +114,14 @@ def read_root():
     return {"message": "Welcome to the Iris Classifier API!"}
 
 
+# --- Input Schema ---
+class IrisInput(BaseModel):
+    sepal_length: float
+    sepal_width: float
+    petal_length: float
+    petal_width: float
+
+
 # --- Prediction Endpoint ---
 @app.post("/predict/")
 async def predict_species(input: IrisInput, request: Request):
@@ -133,22 +130,37 @@ async def predict_species(input: IrisInput, request: Request):
     trace_id = format(span.get_span_context().trace_id, "032x")
 
     try:
+        # Prepare input data
         input_df = pd.DataFrame([input.dict()])
-        result = iris_model(input_df)
+
+        # Make prediction
+        prediction = model.predict(input_df)[0]
+        predicted_class = prediction
+
+        # Optional confidence using predict_proba
+        try:
+            probs = model.predict_proba(input_df)[0]
+            confidence = float(np.max(probs))
+        except Exception:
+            confidence = None
+
         latency = round((time.time() - start_time) * 1000, 2)
 
+        # Logging
         logger.info(json.dumps({
             "event": "prediction",
             "trace_id": trace_id,
             "input": input.dict(),
             "latency_ms": latency,
-            "result": result,
+            "predicted_class": predicted_class,
+            "confidence": confidence,
             "status": "success"
         }))
 
+        # Response
         return {
-            "predicted_class": result["prediction"],
-            "confidence": result["confidence"],
+            "predicted_class": predicted_class,
+            "confidence": confidence,
             "trace_id": trace_id
         }
 
@@ -157,5 +169,5 @@ async def predict_species(input: IrisInput, request: Request):
             "event": "prediction_error",
             "trace_id": trace_id,
             "error": str(e)
-        })) 
+        }))
         raise HTTPException(status_code=500, detail="Prediction failed")
