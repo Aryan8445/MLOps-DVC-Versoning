@@ -13,6 +13,8 @@ from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
 
 # Initialize tracer
 trace.set_tracer_provider(TracerProvider())
@@ -36,6 +38,9 @@ logger.addHandler(handler)
 
 # --- FastAPI App ---
 app = FastAPI(title="Iris Classifier API with Logging and Monitoring")
+
+FastAPIInstrumentor.instrument_app(app)
+app.add_middleware(OpenTelemetryMiddleware)
 
 # --- Application State ---
 app_state = {
