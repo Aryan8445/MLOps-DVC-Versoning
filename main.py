@@ -49,7 +49,8 @@ def iris_model(features: pd.DataFrame):
     """Simulated model function — replace with actual ML pipeline."""
     time.sleep(0.1)  # Simulate computation
     model = joblib.load("model.joblib")
-    return {"prediction": 42, "confidence": 0.99}
+    prediction = model.predict(input_df)[0]
+    return prediction
 
 
 # --- Pydantic Model ---
